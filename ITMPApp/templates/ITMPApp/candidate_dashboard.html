@@ -1,0 +1,224 @@
+{% extends 'ITMPApp/candidate_base.html' %}
+{% block title %}Dashboard — ITMP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .welcome-card {
+        background: #fff; border-radius: 12px; padding: 28px 40px;
+        margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .welcome-card h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+    .welcome-card p { color: #6b7280; font-size: 15px; }
+    .welcome-actions { display: flex; gap: 10px; }
+    .btn { border: none; border-radius: 8px; color: #fff; cursor: pointer; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.88; }
+    .action-btn { height: 38px; padding: 0 18px; font-size: 14px; background: #2f66e8; }
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .metric-card {
+        background: #fff; border-radius: 12px; padding: 18px 20px;
+        display: grid; grid-template-columns: 46px 1fr; column-gap: 16px;
+        align-items: center; box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .metric-icon {
+        width: 42px; height: 42px; border-radius: 50%;
+        background: #eef5ff; display: flex; align-items: center;
+        justify-content: center; font-size: 20px;
+    }
+    .metric-card h3 { font-size: 14px; font-weight: 600; color: #6b7280; margin-bottom: 4px; }
+    .metric-value { font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 5px; }
+    .metric-link { color: #0b5cff; font-size: 13px; }
+    .strength-bar-wrap { width: 100%; height: 6px; background: #e5e7eb; border-radius: 4px; margin-bottom: 5px; }
+    .strength-bar { height: 100%; border-radius: 4px; background: #2f66e8; }
+    .main-grid { display: grid; grid-template-columns: 1.8fr 1fr; gap: 16px; }
+    .panel { background: #fff; border-radius: 12px; padding: 24px 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+    .panel h2 { font-size: 17px; font-weight: 800; margin-bottom: 20px; }
+    .job-list { display: flex; flex-direction: column; gap: 12px; }
+    .job-card {
+        border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 18px;
+        display: grid; grid-template-columns: 46px 1fr 110px;
+        align-items: center; gap: 16px;
+    }
+    .job-logo {
+        width: 44px; height: 44px; border-radius: 8px; background: #7aa2ff;
+        color: #fff; font-size: 20px; font-weight: 800;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .job-info h3 { font-size: 15px; font-weight: 800; margin-bottom: 5px; }
+    .job-info p { color: #6b7280; font-size: 13px; margin-bottom: 6px; }
+    .tags { display: flex; gap: 7px; flex-wrap: wrap; }
+    .tag { background: #e5e7eb; color: #6b7280; border-radius: 10px; padding: 3px 9px; font-size: 12px; }
+    .tag-blue { background: #dbeafe; color: #1d4ed8; }
+    .tag-green { background: #d1fae5; color: #065f46; }
+    .score-btn { width: 100%; height: 36px; font-size: 13px; background: #10b981; }
+    .panel-footer { text-align: center; margin-top: 24px; }
+    .panel-link { color: #0b5cff; font-size: 14px; }
+    .profile-summary { display: flex; flex-direction: column; gap: 16px; padding: 0 4px; }
+    .summary-item h4 { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 4px; }
+    .summary-item p { font-size: 14px; color: #6b7280; }
+    .skills-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .alert-card {
+        background: #fff; border-radius: 12px; margin-top: 18px; padding: 22px 36px;
+        display: flex; align-items: center; justify-content: space-between;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .alert-left { display: flex; align-items: center; gap: 20px; }
+    .alert-icon { font-size: 50px; }
+    .alert-card h2 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .alert-card p { font-size: 13px; color: #6b7280; line-height: 1.4; }
+    .upgrade-btn { height: 38px; padding: 0 20px; font-size: 14px; background: #f59e0b; border: none; border-radius: 8px; color: #fff; cursor: pointer; }
+    .empty-state { text-align: center; padding: 36px 16px; color: #6b7280; font-size: 14px; }
+    @media (max-width: 960px) {
+        .metrics { grid-template-columns: repeat(2, 1fr); }
+        .main-grid { grid-template-columns: 1fr; }
+        .welcome-card { flex-direction: column; align-items: flex-start; gap: 14px; padding: 24px; }
+        .alert-card { flex-direction: column; align-items: flex-start; gap: 16px; padding: 22px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-card">
+    <div>
+        <h1>Welcome back, {{ request.user.first_name }}! 👋</h1>
+        <p>
+            {% if profile.is_member %}
+                ✦ Premium Member — Unlimited job recommendations
+            {% else %}
+                Browse jobs and get personalised recommendations
+            {% endif %}
+        </p>
+    </div>
+    <div class="welcome-actions">
+        <a href="{% url 'job_search' %}"><button class="btn action-btn">Search Jobs</button></a>
+        <a href="{% url 'candidate_profile' %}"><button class="btn action-btn" style="background:#10b981;">Edit Profile</button></a>
+    </div>
+</div>
+
+<div class="metrics">
+    <div class="metric-card">
+        <div class="metric-icon">💼</div>
+        <div>
+            <h3>Active Jobs</h3>
+            <p class="metric-value">{{ total_jobs }}</p>
+            <a href="{% url 'job_search' %}" class="metric-link">Browse all →</a>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon">⭐</div>
+        <div>
+            <h3>Top Matches</h3>
+            <p class="metric-value">{{ match_count }}</p>
+            <a href="{% url 'job_recommendations' %}" class="metric-link">View matches →</a>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon">📊</div>
+        <div>
+            <h3>Profile Strength</h3>
+            <p class="metric-value">{{ profile_strength }}%</p>
+            <div class="strength-bar-wrap">
+                <div class="strength-bar" style="width: {{ profile_strength }};"></div>
+            </div>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon">✦</div>
+        <div>
+            <h3>Membership</h3>
+            <p class="metric-value" style="font-size:20px; padding-top:4px;">
+                {% if profile.is_member %}Premium{% else %}Free{% endif %}
+            </p>
+            {% if not profile.is_member %}
+                <a href="{% url 'membership' %}" class="metric-link">Upgrade →</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="main-grid">
+    <div class="panel">
+        <h2>Top Recommended Jobs for You</h2>
+        <div class="job-list">
+            {% if top_jobs %}
+                {% for item in top_jobs %}
+                <article class="job-card">
+                    <div class="job-logo">{{ item.job.company_info|first|upper }}</div>
+                    <div class="job-info">
+                        <h3>{{ item.job.job_title }}</h3>
+                        <p>{{ item.job.company_info }} · {{ item.job.location }}</p>
+                        <div class="tags">
+                            <span class="tag">{{ item.job.get_work_mode_display }}</span>
+                            <span class="tag">{{ item.job.years_of_experience }}+ yrs exp</span>
+                            <span class="tag tag-blue">Score: {{ item.score }}</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'job_search' %}">
+                        <button class="btn score-btn">View Jobs</button>
+                    </a>
+                </article>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                     No matches yet.<br>
+                    <a href="{% url 'candidate_profile' %}" style="color:#0b5cff;">Complete your profile</a>
+                    to get personalised recommendations.
+                </div>
+            {% endif %}
+        </div>
+        <div class="panel-footer">
+            <a href="{% url 'job_recommendations' %}" class="panel-link">View all recommendations →</a>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>Your Profile</h2>
+        <div class="profile-summary">
+            <div class="summary-item">
+                <h4>📍 Location</h4>
+                <p>{{ profile.location|default:"Not set" }}</p>
+            </div>
+            <div class="summary-item">
+                <h4>💻 Preferred Work Mode</h4>
+                <p>{{ profile.get_preferred_work_mode_display|default:"Not set" }}</p>
+            </div>
+            <div class="summary-item">
+                <h4>🎓 Education</h4>
+                <p>{% if profile.degree %}{{ profile.degree }}{% if profile.major %} in {{ profile.major }}{% endif %}{% else %}Not set{% endif %}</p>
+            </div>
+            <div class="summary-item">
+                <h4>💼 Experience</h4>
+                <p>{{ profile.years_of_experience }} year(s)</p>
+            </div>
+            <div class="summary-item">
+                <h4>🛠 Skills</h4>
+                <div class="skills-wrap">
+                    {% for skill in profile.get_skills_list %}
+                        <span class="tag">{{ skill }}</span>
+                    {% empty %}
+                        <span style="color:#6b7280; font-size:14px;">No skills listed yet</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <a href="{% url 'candidate_profile' %}">
+                <button class="btn" style="width:100%; height:36px; font-size:14px; background:#2f66e8;">Edit Profile</button>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if not profile.is_member %}
+<div class="alert-card">
+    <div class="alert-left">
+        <div class="alert-icon">✦</div>
+        <div>
+            <h2>Unlock Unlimited Recommendations</h2>
+            <p>Free users see only the Top 10 job matches.<br>Upgrade to Premium for unlimited recommendations.</p>
+        </div>
+    </div>
+    <a href="{% url 'membership' %}">
+        <button class="upgrade-btn">Upgrade Now</button>
+    </a>
+</div>
+{% endif %}
+{% endblock %}

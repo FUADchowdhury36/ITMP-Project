@@ -1,0 +1,192 @@
+{% extends 'ITMPApp/employer_base.html' %}
+{% block title %}{{ candidate.user.get_full_name }} — ITMP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .back-link {
+        display: inline-flex; align-items: center; gap: 6px;
+        color: #6b7280; font-size: 14px; margin-bottom: 20px; text-decoration: none;
+    }
+    .back-link:hover { color: #2f66e8; }
+
+    .profile-header {
+        background: #fff; border-radius: 12px; padding: 28px 32px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06); margin-bottom: 18px;
+        display: flex; align-items: center; gap: 24px;
+    }
+    .big-avatar {
+        width: 72px; height: 72px; border-radius: 50%; background: #7aa2ff;
+        color: #fff; font-size: 30px; font-weight: 800;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .header-info h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+    .header-meta { display: flex; gap: 10px; flex-wrap: wrap; }
+    .meta-badge {
+        background: #f3f4f6; border-radius: 8px;
+        padding: 5px 13px; font-size: 13px; color: #374151;
+    }
+
+    .detail-grid { display: grid; grid-template-columns: 1fr 280px; gap: 18px; }
+
+    .section-card {
+        background: #fff; border-radius: 12px; padding: 24px 28px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06); margin-bottom: 16px;
+    }
+    .section-card h2 {
+        font-size: 16px; font-weight: 800; color: #111827;
+        margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb;
+    }
+    .section-card p { font-size: 14px; color: #374151; line-height: 1.7; }
+
+    .info-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #6b7280; }
+    .info-value { color: #111827; font-weight: 600; text-align: right; max-width: 60%; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag { background: #e5e7eb; color: #374151; border-radius: 10px; padding: 5px 12px; font-size: 13px; }
+    .tag-blue { background: #dbeafe; color: #1d4ed8; }
+    .tag-green { background: #d1fae5; color: #065f46; }
+
+    .cv-btn {
+        display: block; width: 100%; height: 46px; border: none; border-radius: 9px;
+        background: #2f66e8; color: #fff; font-size: 15px; font-weight: 700;
+        cursor: pointer; text-decoration: none; text-align: center;
+        line-height: 46px; transition: background 0.2s;
+    }
+    .cv-btn:hover { background: #1d4ed8; color: #fff; }
+    .no-cv {
+        background: #f3f4f6; border-radius: 9px; padding: 14px;
+        text-align: center; font-size: 13px; color: #6b7280;
+    }
+
+    @media (max-width: 900px) {
+        .detail-grid { grid-template-columns: 1fr; }
+        .profile-header { flex-direction: column; align-items: flex-start; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'employer_candidate_search' %}" class="back-link">← Back to Search</a>
+
+<!-- HEADER -->
+<div class="profile-header">
+    <div class="big-avatar">{{ candidate.user.first_name|first|upper }}</div>
+    <div class="header-info">
+        <h1>{{ candidate.user.get_full_name }}</h1>
+        <div class="header-meta">
+            {% if candidate.location %}
+                <span class="meta-badge">📍 {{ candidate.location }}</span>
+            {% endif %}
+            {% if candidate.preferred_work_mode %}
+                <span class="meta-badge">💼 {{ candidate.get_preferred_work_mode_display }}</span>
+            {% endif %}
+            <span class="meta-badge">🎓 {{ candidate.years_of_experience }} yr(s) exp</span>
+            {% if candidate.degree %}
+                <span class="meta-badge">📚 {{ candidate.degree }}</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- GRID -->
+<div class="detail-grid">
+
+    <!-- LEFT -->
+    <div>
+        {% if candidate.professional_summary %}
+        <div class="section-card">
+            <h2>Professional Summary</h2>
+            <p>{{ candidate.professional_summary }}</p>
+        </div>
+        {% endif %}
+
+        <div class="section-card">
+            <h2>Skills</h2>
+            <div class="tags">
+                {% for skill in candidate.get_skills_list %}
+                    <span class="tag tag-blue">{{ skill }}</span>
+                {% empty %}
+                    <p style="color:#6b7280; font-size:14px;">No skills listed yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>Education</h2>
+            <div class="info-row">
+                <span class="info-label">University</span>
+                <span class="info-value">{{ candidate.university|default:"Not specified" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Degree</span>
+                <span class="info-value">{{ candidate.degree|default:"Not specified" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Major</span>
+                <span class="info-value">{{ candidate.major|default:"Not specified" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Graduation Year</span>
+                <span class="info-value">{{ candidate.graduation_year|default:"Not specified" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <div>
+        <div class="section-card">
+            <h2>Candidate Overview</h2>
+            <div class="info-row">
+                <span class="info-label">Location</span>
+                <span class="info-value">{{ candidate.location|default:"Not set" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Preferred Location</span>
+                <span class="info-value">{{ candidate.preferred_location|default:"Not set" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Work Mode</span>
+                <span class="info-value">{{ candidate.get_preferred_work_mode_display|default:"Not set" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Experience</span>
+                <span class="info-value">{{ candidate.years_of_experience }} year(s)</span>
+            </div>
+            {% if candidate.preferred_industry %}
+            <div class="info-row">
+                <span class="info-label">Industry</span>
+                <span class="info-value">{{ candidate.preferred_industry }}</span>
+            </div>
+            {% endif %}
+            <div class="info-row">
+                <span class="info-label">Email</span>
+                <span class="info-value">{{ candidate.user.email }}</span>
+            </div>
+            {% if candidate.phone %}
+            <div class="info-row">
+                <span class="info-label">Phone</span>
+                <span class="info-value">{{ candidate.phone }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="section-card">
+            <h2>CV / Resume</h2>
+            {% if candidate.cv %}
+                <a href="{{ candidate.cv.url }}" target="_blank" class="cv-btn">
+                    📄 Download CV
+                </a>
+            {% else %}
+                <div class="no-cv">No CV uploaded yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}ITMP{% endblock %}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, Helvetica, sans-serif; background: #f4f7fb; color: #111827; }
+
+        .topbar {
+            height: 80px; background: #ffffff;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px; box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo { font-size: 30px; font-weight: 800; color: #2f66e8; text-decoration: none; }
+        .user-area { display: flex; align-items: center; gap: 20px; }
+        .user-name { font-size: 17px; font-weight: 500; color: #111827; }
+        .avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: #dbeafe; display: flex; align-items: center;
+            justify-content: center; font-size: 18px; font-weight: 700; color: #2f66e8;
+        }
+
+        .layout { display: grid; grid-template-columns: 250px 1fr; min-height: calc(100vh - 80px); }
+
+        .sidebar {
+            background: #ffffff; padding: 32px 10px 24px;
+            display: flex; flex-direction: column;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+            position: sticky; top: 80px; height: calc(100vh - 80px);
+        }
+        a { text-decoration: none; color: inherit; }
+        .nav-item {
+            height: 48px; padding: 0 20px;
+            display: flex; align-items: center; gap: 14px;
+            color: #6b7280; font-size: 15px; font-weight: 500;
+            border-radius: 10px; margin: 0 10px 8px;
+            cursor: pointer; transition: background 0.15s, color 0.15s;
+        }
+        .nav-item:hover { background: #f3f6fc; color: #374151; }
+        .nav-item.active { background: #eef5ff; color: #0b5cff; font-weight: 700; }
+        .nav-icon { width: 22px; text-align: center; font-size: 18px; flex-shrink: 0; }
+        .logout-section { margin-top: auto; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+
+        .content { padding: 28px 24px 40px; overflow-y: auto; }
+
+        @media (max-width: 960px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; padding: 12px; }
+            .nav-item { margin-bottom: 4px; }
+            .logout-section { margin-top: 0; border-top: none; padding-top: 0; border-left: 1px solid #e5e7eb; padding-left: 12px; margin-left: auto; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<header class="topbar">
+    <a href="{% url 'candidate_dashboard' %}" class="logo">ITMP</a>
+    <div class="user-area">
+        <span class="user-name">{{ request.user.get_full_name }}</span>
+        <div class="avatar">{{ request.user.first_name|first }}</div>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar">
+        <a href="{% url 'candidate_dashboard' %}">
+            <div class="nav-item {% if request.resolver_match.url_name == 'candidate_dashboard' %}active{% endif %}">
+                <span class="nav-icon">⌂</span> Dashboard
+            </div>
+        </a>
+        <a href="{% url 'candidate_profile' %}">
+            <div class="nav-item {% if request.resolver_match.url_name == 'candidate_profile' %}active{% endif %}">
+                <span class="nav-icon">👤</span> My Profile
+            </div>
+        </a>
+        <a href="{% url 'job_search' %}">
+            <div class="nav-item {% if request.resolver_match.url_name == 'job_search' %}active{% endif %}">
+                <span class="nav-icon">🔍</span> Job Search
+            </div>
+        </a>
+        <a href="{% url 'job_recommendations' %}">
+            <div class="nav-item {% if request.resolver_match.url_name == 'job_recommendations' %}active{% endif %}">
+                <span class="nav-icon">⭐</span> Recommendations
+            </div>
+        </a>
+        <a href="{% url 'membership' %}">
+            <div class="nav-item {% if request.resolver_match.url_name == 'membership' %}active{% endif %}">
+                <span class="nav-icon">✦</span> Membership
+            </div>
+        </a>
+        <div class="logout-section">
+            <a href="{% url 'logout' %}">
+                <div class="nav-item">
+                    <span class="nav-icon">↪</span> Log out
+                </div>
+            </a>
+        </div>
+    </aside>
+
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+</body>
+</html>

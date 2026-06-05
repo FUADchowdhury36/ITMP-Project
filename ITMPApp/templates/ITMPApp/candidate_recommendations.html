@@ -1,0 +1,157 @@
+{% extends 'ITMPApp/employer_base.html' %}
+{% block title %}Recommended Candidates — ITMP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { font-size: 30px; font-weight: 800; margin-bottom: 6px; }
+    .page-header p { color: #6b7280; font-size: 15px; }
+
+    .job-selector {
+        background: #fff; border-radius: 11px; padding: 20px 24px;
+        margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .job-selector label { font-size: 14px; font-weight: 700; color: #444; margin-bottom: 8px; display: block; }
+    .job-selector select {
+        width: 100%; height: 42px; border: 1px solid #d1d5db;
+        border-radius: 7px; padding: 0 12px; font-size: 14px; color: #111827;
+        background: #fff; outline: none; cursor: pointer; font-family: inherit;
+    }
+    .filter-btn {
+        margin-top: 12px; height: 38px; padding: 0 20px; border: none;
+        border-radius: 7px; background: #2f66e8; color: #fff;
+        font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+
+    .banner {
+        border-radius: 10px; padding: 14px 20px; margin-bottom: 20px;
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .banner-yellow { background: #fef9c3; border: 1px solid #fde047; }
+    .banner-yellow p { font-size: 13px; color: #854d0e; font-weight: 500; }
+    .banner-green { background: #dcfce7; border: 1px solid #86efac; }
+    .banner-green p { font-size: 13px; color: #166534; font-weight: 500; }
+    .upgrade-btn {
+        height: 32px; padding: 0 14px; border: none; border-radius: 7px;
+        background: #f59e0b; color: #fff; font-size: 13px; font-weight: 700;
+        cursor: pointer; white-space: nowrap;
+    }
+
+    .candidates-list { display: flex; flex-direction: column; gap: 14px; }
+    .candidate-card {
+        background: #fff; border: 1px solid #d1d5db; border-radius: 12px;
+        padding: 18px 22px; display: grid; grid-template-columns: 50px 1fr auto;
+        align-items: center; gap: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        transition: box-shadow 0.2s;
+    }
+    .candidate-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+    .c-avatar {
+        width: 46px; height: 46px; border-radius: 50%; background: #7aa2ff;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 20px; font-weight: 700;
+    }
+    .candidate-info h3 { font-size: 17px; font-weight: 800; margin-bottom: 5px; }
+    .candidate-info p { color: #6b7280; font-size: 13px; margin-bottom: 4px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .tag { background: #e5e7eb; color: #6b7280; border-radius: 10px; padding: 2px 9px; font-size: 12px; }
+
+    .score-area { text-align: center; min-width: 80px; }
+    .score-circle {
+        width: 62px; height: 62px; border-radius: 50%;
+        background: #eef5ff; border: 3px solid #2f66e8;
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: center; margin: 0 auto 6px;
+    }
+    .score-number { font-size: 20px; font-weight: 800; color: #2f66e8; line-height: 1; }
+    .score-label { font-size: 10px; color: #6b7280; }
+    .match-text { font-size: 11px; color: #6b7280; }
+
+    .empty-box {
+        text-align: center; padding: 50px 20px;
+        background: #fff; border-radius: 12px;
+    }
+    .empty-box h2 { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
+    .empty-box p { color: #6b7280; margin-bottom: 14px; }
+    .empty-box a {
+        display: inline-block; padding: 10px 20px;
+        background: #2f66e8; color: #fff;
+        border-radius: 7px; font-weight: 700;
+    }
+
+    @media (max-width: 700px) { .candidate-card { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🎯 Recommended Candidates</h1>
+    <p>Top candidates matched to your job posting based on skills, experience, and preferences.</p>
+</div>
+
+{% if my_jobs %}
+    <div class="job-selector">
+        <label>Select a job to find matching candidates:</label>
+        <form method="GET">
+            <select name="job_id">
+                {% for job in my_jobs %}
+                    <option value="{{ job.id }}"
+                        {% if selected_job and selected_job.id == job.id %}selected{% endif %}>
+                        {{ job.job_title }} — {{ job.location }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button class="filter-btn" type="submit">Find Matches</button>
+        </form>
+    </div>
+
+    {% if not is_member %}
+    <div class="banner banner-yellow">
+        <p>⭐ Showing <strong>Top 10</strong> matches. Upgrade for unlimited candidate recommendations!</p>
+        <a href="{% url 'membership' %}"><button class="upgrade-btn">Upgrade</button></a>
+    </div>
+    {% else %}
+    <div class="banner banner-green">
+        <p>✅ <strong>Premium Member</strong> — viewing all matched candidates!</p>
+    </div>
+    {% endif %}
+
+    {% if scored_candidates %}
+        <div class="candidates-list">
+            {% for item in scored_candidates %}
+            <article class="candidate-card">
+                <div class="c-avatar">{{ item.candidate.user.first_name|first }}</div>
+                <div class="candidate-info">
+                    <h3>{{ item.candidate.user.get_full_name }}</h3>
+                    <p>{{ item.candidate.degree|default:"No degree listed" }} · {{ item.candidate.years_of_experience }} yrs exp</p>
+                    <p>{{ item.candidate.location|default:"Location not set" }} · {{ item.candidate.get_preferred_work_mode_display|default:"Work mode not set" }}</p>
+                    <div class="tags">
+                        {% for skill in item.candidate.get_skills_list %}
+                            <span class="tag">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="score-area">
+                    <div class="score-circle">
+                        <span class="score-number">{{ item.score }}</span>
+                        <span class="score-label">pts</span>
+                    </div>
+                    <p class="match-text">Match Score</p>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-box">
+            <h2>No matching candidates yet</h2>
+            <p>No candidates have matching skills or preferences for this job posting yet.</p>
+        </div>
+    {% endif %}
+
+{% else %}
+    <div class="empty-box">
+        <h2>No job postings yet</h2>
+        <p>You need to post a job first before getting candidate recommendations.</p>
+        <a href="{% url 'create_job' %}">Post Your First Job →</a>
+    </div>
+{% endif %}
+{% endblock %}

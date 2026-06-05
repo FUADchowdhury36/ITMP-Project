@@ -1,0 +1,107 @@
+{% extends 'ITMPApp/candidate_base.html' %}
+{% block title %}Job Search — ITMP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header { margin-bottom: 28px; }
+    .page-header h1 { font-size: 30px; font-weight: 800; margin-bottom: 8px; }
+    .page-header p { color: #6b7280; font-size: 15px; }
+
+    .search-row { display: flex; gap: 12px; margin-bottom: 16px; }
+    .search-input {
+        flex: 1; height: 46px; border: 1px solid #d1d5db;
+        border-radius: 8px; padding: 0 16px; font-size: 14px;
+        color: #111827; outline: none; font-family: inherit;
+    }
+    .search-input:focus { border-color: #2f66e8; box-shadow: 0 0 0 3px rgba(47,102,232,0.12); }
+    .search-btn {
+        height: 46px; padding: 0 24px; border: none;
+        border-radius: 8px; background: #2f66e8; color: #fff;
+        font-size: 15px; font-weight: 700; cursor: pointer;
+    }
+
+    .filters { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+    .filter-input, .filter-select {
+        height: 40px; border: 1px solid #d1d5db; border-radius: 7px;
+        padding: 0 14px; font-size: 14px; color: #111827;
+        background: #fff; outline: none; font-family: inherit; cursor: pointer;
+    }
+    .filter-input:focus, .filter-select:focus { border-color: #2f66e8; }
+
+    .jobs-list { display: flex; flex-direction: column; gap: 16px; }
+    .job-card {
+        background: #ffffff; border: 1px solid #dde1e7;
+        border-radius: 12px; padding: 20px 24px;
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .job-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.09); }
+    .job-content h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+    .company { color: #0b5cff; font-size: 15px; font-weight: 500; margin-bottom: 6px; display: block; }
+    .meta { color: #6b7280; font-size: 14px; margin-bottom: 6px; }
+    .description { color: #374151; font-size: 14px; line-height: 1.4; }
+    .details-btn {
+        height: 42px; padding: 0 22px; background: #2f66e8; color: #fff;
+        border: none; border-radius: 8px; font-size: 14px;
+        font-weight: 600; cursor: pointer; white-space: nowrap;
+        transition: background 0.2s; flex-shrink: 0;
+    }
+    .details-btn:hover { background: #1d4ed8; }
+    .no-results { text-align: center; padding: 60px 20px; color: #6b7280; font-size: 15px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Search Jobs</h1>
+    <p>Browse available jobs and search for positions that match your interests.</p>
+</div>
+
+<form method="GET">
+    <div class="search-row">
+        <input class="search-input" type="text" name="keyword"
+            placeholder="Search jobs by keyword (e.g. Python, Marketing)"
+            value="{{ keyword }}" />
+        <button class="search-btn" type="submit">Search</button>
+    </div>
+    <div class="filters">
+        <input class="filter-input" type="text" name="location"
+            placeholder="📍 Location" value="{{ location }}" />
+        <select class="filter-select" name="work_mode">
+            <option value="">Work Mode</option>
+            <option value="onsite" {% if work_mode == 'onsite' %}selected{% endif %}>On-site</option>
+            <option value="hybrid" {% if work_mode == 'hybrid' %}selected{% endif %}>Hybrid</option>
+            <option value="remote" {% if work_mode == 'remote' %}selected{% endif %}>Remote</option>
+        </select>
+        <select class="filter-select" name="experience">
+            <option value="">Experience</option>
+            <option value="1" {% if experience == '1' %}selected{% endif %}>0–1 Years</option>
+            <option value="3" {% if experience == '3' %}selected{% endif %}>Up to 3 Years</option>
+            <option value="5" {% if experience == '5' %}selected{% endif %}>Up to 5 Years</option>
+        </select>
+        {% if salary %}<input type="hidden" name="salary" value="{{ salary }}">{% endif %}
+    </div>
+</form>
+
+<div class="jobs-list">
+    {% if jobs %}
+        {% for job in jobs %}
+        <article class="job-card">
+            <div class="job-content">
+                <h2>{{ job.job_title }}</h2>
+                <span class="company">{{ job.company_info }}</span>
+                <p class="meta">{{ job.location }} · {{ job.get_work_mode_display }}</p>
+                <p class="description">{{ job.job_description|truncatewords:20 }}</p>
+            </div>
+            <a href="{% url 'job_detail' job.id %}">
+                <button class="details-btn">View Details</button>
+            </a>
+        </article>
+        {% endfor %}
+    {% else %}
+        <div class="no-results">
+            😕 No jobs found. Try a different keyword or remove some filters.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

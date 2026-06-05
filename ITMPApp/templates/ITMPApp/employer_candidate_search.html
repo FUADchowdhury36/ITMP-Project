@@ -1,0 +1,133 @@
+{% extends 'ITMPApp/employer_base.html' %}
+{% block title %}Search Candidates — ITMP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { font-size: 30px; font-weight: 800; margin-bottom: 6px; }
+    .page-header p { color: #6b7280; font-size: 15px; }
+
+    .search-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+    .search-form input, .search-form select {
+        width: 100%; padding: 10px 14px; border: 1px solid #d1d5db;
+        border-radius: 8px; font-size: 14px; color: #111827;
+        background: #f9fafb; outline: none; font-family: inherit;
+    }
+    .search-form input:focus, .search-form select:focus { border-color: #2f66e8; background: #fff; }
+    .form-actions { display: flex; gap: 10px; margin-bottom: 18px; }
+    .btn-search {
+        background: #2f66e8; color: #fff; border: none;
+        border-radius: 8px; padding: 10px 24px;
+        font-size: 15px; cursor: pointer; font-weight: 600;
+    }
+    .btn-clear {
+        background: #fff; color: #6b7280; border: 1px solid #d1d5db;
+        border-radius: 8px; padding: 10px 20px; font-size: 15px; cursor: pointer;
+    }
+    .results-count { color: #6b7280; font-size: 14px; margin-bottom: 14px; }
+
+    .candidate-card {
+        border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px 22px;
+        margin-bottom: 12px; background: #fff;
+        display: grid; grid-template-columns: 46px 1fr auto; gap: 16px; align-items: center;
+        cursor: pointer; transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .candidate-card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+        border-color: #2f66e8;
+    }
+    .candidate-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    .c-avatar {
+        width: 42px; height: 42px; border-radius: 8px; background: #7aa2ff;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 18px; font-weight: 700;
+    }
+    .c-name { font-size: 17px; font-weight: 800; margin-bottom: 5px; color: #111827; }
+    .c-meta { color: #6b7280; font-size: 13px; margin-bottom: 8px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 7px; }
+    .tag { background: #e5e7eb; color: #374151; border-radius: 10px; padding: 3px 10px; font-size: 12px; }
+    .tag-blue { background: #dbeafe; color: #1d4ed8; }
+    .view-btn {
+        background: #2f66e8; color: #fff;
+        border: none; border-radius: 8px;
+        padding: 8px 18px; font-size: 13px;
+        font-weight: 600; cursor: pointer;
+        white-space: nowrap;
+    }
+    .no-results { text-align: center; padding: 48px 20px; color: #6b7280; font-size: 15px; }
+
+    @media (max-width: 700px) {
+        .search-form { grid-template-columns: 1fr; }
+        .candidate-card { grid-template-columns: 46px 1fr; }
+        .view-btn { display: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Search Candidates</h1>
+    <p>Find the right talent using keywords, filters, or both. Click any candidate to view their full profile.</p>
+</div>
+
+<form method="GET">
+    <div class="search-form">
+        <input type="text" name="keyword" placeholder="🔍 Keyword (e.g. Python, Marketing)" value="{{ keyword }}">
+        <input type="text" name="location" placeholder="📍 Location (e.g. Sydney)" value="{{ location }}">
+        <select name="work_mode">
+            <option value="">Any Work Mode</option>
+            <option value="remote"  {% if work_mode == 'remote'  %}selected{% endif %}>Remote</option>
+            <option value="onsite"  {% if work_mode == 'onsite'  %}selected{% endif %}>On-site</option>
+            <option value="hybrid"  {% if work_mode == 'hybrid'  %}selected{% endif %}>Hybrid</option>
+        </select>
+        <input type="number" name="experience" placeholder="Min. Years Experience" value="{{ experience }}" min="0">
+        <input type="text" name="education" placeholder="Degree / Major" value="{{ education }}">
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn-search">Search</button>
+        <a href="{% url 'employer_candidate_search' %}">
+            <button type="button" class="btn-clear">Clear</button>
+        </a>
+    </div>
+</form>
+
+<p class="results-count">{{ total }} candidate(s) found</p>
+
+{% if candidates %}
+    {% for candidate in candidates %}
+    <a href="{% url 'candidate_detail' candidate.id %}" class="candidate-link">
+        <div class="candidate-card">
+            <div class="c-avatar">{{ candidate.user.first_name|first }}</div>
+            <div>
+                <div class="c-name">{{ candidate.user.get_full_name }}</div>
+                <div class="c-meta">
+                    📍 {{ candidate.location|default:"Location not set" }}
+                    {% if candidate.preferred_location %} → prefers {{ candidate.preferred_location }}{% endif %}
+                    &nbsp;·&nbsp;
+                    🎓 {{ candidate.degree|default:"" }} {{ candidate.major|default:"Education not set" }}
+                    &nbsp;·&nbsp;
+                    💼 {{ candidate.years_of_experience }} yr(s) exp
+                </div>
+                <div class="tags">
+                    {% if candidate.preferred_work_mode %}
+                        <span class="tag tag-blue">{{ candidate.get_preferred_work_mode_display }}</span>
+                    {% endif %}
+                    {% for skill in candidate.get_skills_list %}
+                        <span class="tag">{{ skill }}</span>
+                    {% empty %}
+                        <span class="tag">No skills listed</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <button class="view-btn">View Profile →</button>
+        </div>
+    </a>
+    {% endfor %}
+{% else %}
+    <div class="no-results">😔 No candidates found. Try different keywords or remove some filters.</div>
+{% endif %}
+{% endblock %}

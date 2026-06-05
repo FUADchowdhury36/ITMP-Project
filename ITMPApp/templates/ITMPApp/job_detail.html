@@ -1,0 +1,210 @@
+{% extends 'ITMPApp/candidate_base.html' %}
+{% block title %}{{ job.job_title }} — ITMP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .back-link {
+        display: inline-flex; align-items: center; gap: 6px;
+        color: #6b7280; font-size: 14px; margin-bottom: 20px;
+        text-decoration: none;
+    }
+    .back-link:hover { color: #2f66e8; }
+
+    .job-header {
+        background: #fff; border-radius: 12px; padding: 28px 32px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06); margin-bottom: 18px;
+        display: flex; align-items: flex-start; gap: 20px;
+    }
+    .job-logo {
+        width: 58px; height: 58px; border-radius: 12px; background: #7aa2ff;
+        color: #fff; font-size: 24px; font-weight: 800;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .job-title-block h1 { font-size: 26px; font-weight: 800; margin-bottom: 5px; }
+    .job-company { color: #0b5cff; font-size: 15px; font-weight: 500; margin-bottom: 10px; }
+    .job-meta { display: flex; gap: 10px; flex-wrap: wrap; }
+    .meta-badge {
+        background: #f3f4f6; border-radius: 8px;
+        padding: 5px 13px; font-size: 13px; color: #374151;
+    }
+
+    .detail-grid { display: grid; grid-template-columns: 1fr 300px; gap: 18px; }
+
+    .section-card {
+        background: #fff; border-radius: 12px; padding: 26px 30px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06); margin-bottom: 16px;
+    }
+    .section-card h2 {
+        font-size: 16px; font-weight: 800; color: #111827;
+        margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb;
+    }
+    .section-card p { font-size: 14px; color: #374151; line-height: 1.8; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag { background: #e5e7eb; color: #374151; border-radius: 10px; padding: 5px 12px; font-size: 13px; }
+    .tag-blue { background: #dbeafe; color: #1d4ed8; }
+
+    .sidebar-card {
+        background: #fff; border-radius: 12px; padding: 22px 26px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06); margin-bottom: 16px;
+    }
+    .sidebar-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 14px; color: #111827; }
+    .info-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 9px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #6b7280; }
+    .info-value { color: #111827; font-weight: 600; }
+
+    /* Apply button */
+    .apply-btn {
+        width: 100%; height: 50px; border: none; border-radius: 10px;
+        background: #2f66e8; color: #fff; font-size: 16px;
+        font-weight: 700; cursor: pointer; margin-bottom: 10px;
+        transition: background 0.2s;
+    }
+    .apply-btn:hover { background: #1d4ed8; }
+
+    /* Already applied badge */
+    .applied-badge {
+        width: 100%; height: 50px; border-radius: 10px;
+        background: #dcfce7; border: 2px solid #86efac;
+        color: #166534; font-size: 15px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        gap: 8px; margin-bottom: 10px;
+    }
+
+    .alert-success {
+        background: #dcfce7; border: 1px solid #86efac;
+        border-radius: 8px; padding: 12px 16px;
+        color: #166534; font-size: 14px; margin-bottom: 16px;
+    }
+    .alert-info {
+        background: #dbeafe; border: 1px solid #93c5fd;
+        border-radius: 8px; padding: 12px 16px;
+        color: #1d4ed8; font-size: 14px; margin-bottom: 16px;
+    }
+
+    @media (max-width: 900px) {
+        .detail-grid { grid-template-columns: 1fr; }
+        .job-header { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'job_search' %}" class="back-link">← Back to Job Search</a>
+
+{% if messages %}
+    {% for message in messages %}
+        {% if 'successfully' in message.message %}
+            <div class="alert-success">✅ {{ message }}</div>
+        {% else %}
+            <div class="alert-info">ℹ️ {{ message }}</div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+<!-- JOB HEADER -->
+<div class="job-header">
+    <div class="job-logo">{{ job.company_info|first|upper }}</div>
+    <div class="job-title-block">
+        <h1>{{ job.job_title }}</h1>
+        <p class="job-company">{{ job.company_info }}</p>
+        <div class="job-meta">
+            <span class="meta-badge">📍 {{ job.location }}</span>
+            <span class="meta-badge">💼 {{ job.get_work_mode_display }}</span>
+            <span class="meta-badge">🎓 {{ job.years_of_experience }}+ yrs exp</span>
+            {% if job.salary_min and job.salary_max %}
+                <span class="meta-badge">💰 ${{ job.salary_min }}k – ${{ job.salary_max }}k</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="detail-grid">
+
+    <!-- LEFT: DESCRIPTION -->
+    <div>
+        <div class="section-card">
+            <h2>Job Description</h2>
+            <p>{{ job.job_description|linebreaks }}</p>
+        </div>
+        {% if job.get_skills_list %}
+        <div class="section-card">
+            <h2>Required Skills</h2>
+            <div class="tags">
+                {% for skill in job.get_skills_list %}
+                    <span class="tag tag-blue">{{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- RIGHT: SIDEBAR -->
+    <div>
+        <!-- JOB OVERVIEW -->
+        <div class="sidebar-card">
+            <h3>Job Overview</h3>
+            <div class="info-row">
+                <span class="info-label">Location</span>
+                <span class="info-value">{{ job.location }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Work Mode</span>
+                <span class="info-value">{{ job.get_work_mode_display }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Experience</span>
+                <span class="info-value">{{ job.years_of_experience }}+ years</span>
+            </div>
+            {% if job.required_education %}
+            <div class="info-row">
+                <span class="info-label">Education</span>
+                <span class="info-value">{{ job.required_education }}</span>
+            </div>
+            {% endif %}
+            {% if job.salary_min and job.salary_max %}
+            <div class="info-row">
+                <span class="info-label">Salary</span>
+                <span class="info-value">${{ job.salary_min }}k – ${{ job.salary_max }}k</span>
+            </div>
+            {% endif %}
+            <div class="info-row">
+                <span class="info-label">Posted</span>
+                <span class="info-value">{{ job.created_at|date:"d M Y" }}</span>
+            </div>
+        </div>
+
+        <!-- APPLY CARD -->
+        <div class="sidebar-card">
+            <h3>Apply for this Job</h3>
+            <p style="font-size:13px; color:#6b7280; margin-bottom:14px; line-height:1.5;">
+                Submit your application to express your interest in this role.
+            </p>
+
+            {% if has_applied %}
+                <div class="applied-badge">✅ Applied Successfully</div>
+                <p style="font-size:12px; color:#6b7280; text-align:center;">
+                    You have already applied for this job.
+                </p>
+            {% else %}
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="apply-btn">🚀 Apply Now</button>
+                </form>
+            {% endif %}
+
+            <a href="{% url 'candidate_profile' %}"
+               style="display:block; text-align:center; margin-top:10px; color:#6b7280; font-size:13px; text-decoration:none;">
+                Update My Profile →
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

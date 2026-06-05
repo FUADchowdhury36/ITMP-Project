@@ -1,0 +1,120 @@
+{% extends 'ITMPApp/employer_base.html' %}
+{% block title %}Employer Dashboard — ITMP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .welcome-card {
+        background: #fff; border-radius: 12px;
+        padding: 28px 40px; margin-bottom: 20px;
+        display: flex; align-items: center; justify-content: space-between;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .welcome-card h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .welcome-card p { color: #6b7280; font-size: 15px; }
+    .welcome-actions { display: flex; gap: 10px; }
+    .btn {
+        height: 38px; padding: 0 18px; border: none; border-radius: 8px;
+        font-size: 14px; font-weight: 600; cursor: pointer; color: #fff;
+        transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.88; }
+    .btn-blue { background: #2f66e8; }
+    .btn-green { background: #10b981; }
+
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+    .metric-card {
+        background: #fff; border-radius: 12px; padding: 20px 24px;
+        display: flex; align-items: center; gap: 18px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .metric-icon {
+        width: 46px; height: 46px; border-radius: 50%;
+        background: #eef5ff; display: flex; align-items: center;
+        justify-content: center; font-size: 22px; flex-shrink: 0;
+    }
+    .metric-card h3 { font-size: 14px; font-weight: 500; color: #6b7280; margin-bottom: 4px; }
+    .metric-value { font-size: 32px; font-weight: 800; line-height: 1; }
+
+    .panel {
+        background: #fff; border-radius: 12px; padding: 24px 20px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .panel h2 { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
+    .job-list { display: flex; flex-direction: column; gap: 12px; }
+    .job-item {
+        border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 20px;
+    }
+    .job-item h3 { font-size: 16px; font-weight: 700; margin-bottom: 5px; }
+    .job-item p { color: #6b7280; font-size: 13px; margin-bottom: 6px; }
+    .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag { background: #e5e7eb; color: #6b7280; border-radius: 10px; padding: 3px 10px; font-size: 12px; }
+    .empty-msg { color: #6b7280; padding: 20px 0; }
+    .empty-msg a { color: #0b5cff; }
+
+    @media (max-width: 700px) {
+        .metrics { grid-template-columns: 1fr; }
+        .welcome-card { flex-direction: column; align-items: flex-start; gap: 16px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-card">
+    <div>
+        <h1>Welcome back, {{ request.user.first_name }}! 👋</h1>
+        <p>Manage your jobs and find the best talent</p>
+    </div>
+    <div class="welcome-actions">
+        <a href="{% url 'create_job' %}"><button class="btn btn-blue">Post New Job</button></a>
+        <a href="{% url 'employer_candidate_search' %}"><button class="btn btn-green">Search Candidates</button></a>
+    </div>
+</div>
+
+<div class="metrics">
+    <div class="metric-card">
+        <div class="metric-icon">📋</div>
+        <div>
+            <h3>Total Jobs Posted</h3>
+            <p class="metric-value">{{ total_jobs }}</p>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon">🔍</div>
+        <div>
+            <h3>Search Candidates</h3>
+            <p class="metric-value" style="font-size:18px; padding-top:4px;">
+                <a href="{% url 'employer_candidate_search' %}" style="color:#0b5cff; font-size:14px;">Browse →</a>
+            </p>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon">⭐</div>
+        <div>
+            <h3>Recommendations</h3>
+            <p class="metric-value" style="font-size:18px; padding-top:4px;">
+                <a href="{% url 'candidate_recommendations' %}" style="color:#0b5cff; font-size:14px;">View →</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <h2>Your Job Postings</h2>
+    <div class="job-list">
+        {% if my_jobs %}
+            {% for job in my_jobs %}
+            <div class="job-item">
+                <h3>{{ job.job_title }}</h3>
+                <p>{{ job.company_info }} · {{ job.location }} · {{ job.get_work_mode_display }}</p>
+                <div class="tags">
+                    <span class="tag">{{ job.years_of_experience }} yrs exp</span>
+                    <span class="tag">{{ job.get_work_mode_display }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="empty-msg">No jobs posted yet. <a href="{% url 'create_job' %}">Post your first job →</a></p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
