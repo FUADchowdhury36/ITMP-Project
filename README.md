@@ -26,10 +26,10 @@ EVERY TIME — START THE SERVER
 Keep the terminal open while using the app. Press Ctrl+C to stop.
 
 
-TEST ACCOUNTS (password: testpass123)
+TEST ACCOUNTS (password: test12345)
 --------------------------------------
-Candidate : alice.johnson@email.com
-Employer  : sarah@technovasolutions.com
+Candidate : sam.naf36@outlook.com
+Employer  : naf.sam36@yahoo.com
 
 
 COMMON ERRORS
